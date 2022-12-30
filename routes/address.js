@@ -70,7 +70,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const {id}= req.params;
     const deletedAddress = await AddressSchema.findByAndDelete(id);
-    return res.json({ message: "Adress Deleted" }); 
+    return res.json({ message: "Address Deleted" }); 
   } catch (e) {
     return res.json({ message: e, status: "error" });
   }
