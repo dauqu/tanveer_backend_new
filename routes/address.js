@@ -66,14 +66,19 @@ router.post("/", async (req, res) => {
   }
 });
 
+//Delete address
 router.delete("/:id", async (req, res) => {
+  //Check user have token or not
+  const id = req.params.id;
+  
+  //Find by id and delete
   try {
-    const {id}= req.params;
-    const deletedAddress = await AddressSchema.findByAndDelete(id);
-    return res.json({ message: "Address Deleted" }); 
-  } catch (e) {
-    return res.json({ message: e, status: "error" });
+    const address = await AddressSchema.findByIdAndDelete(id);
+    res.status(200).json({ message: "Address deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
+
 
 module.exports = router;
