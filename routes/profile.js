@@ -29,7 +29,7 @@ require("dotenv").config();
 // code to get user profile
 router.get("/", async (req, res) => {
   try {
-    let token = req.cookies.token || req.headers["token"];
+    let token = req.cookies.auth_token || req.body.token || req.headers["x-auth-token"];
 
     if (token != undefined || token != null || token != "") {
       const have_valid_token = JWT.verify(token, process.env.JWT_SECRET);
@@ -51,20 +51,22 @@ router.get("/", async (req, res) => {
 
 router.patch('/', async (req, res) => {
   try {
-    // get token 
-    const token = req.body.token || req.headers["token"] || req.cookies.token;
-    if(!token){
-      res.json({message: "Unauthorized", status: "warning"})
+    let token = req.cookies.auth_token || req.body.token || req.headers["x-auth-token"];
+
+    if (token != undefined || token != null || token != '') {
+      const have_valid_token = JWT.verify(token, process.env.JWT_SECRET);
+      const id_from_token = have_valid_token.id;
+      //Update all fields by id
+      const user_data = await UsersSchema.findByIdAndUpdate(id_from_token, req.body, { new: true });
+
+      await user_data.save();
+      res.json({ message: 'Profile updated successfully', status: 'success' });
+    } else {
+      res.json({ message: 'You are not login ', status: 'warning' });
     }
-    const userdecoded = JWT.verify(token, process.env.JWT_SECRET);
-    if(!userdecoded){
-      res.json({message: "User not found", status: "warning"})
-    }
-    const updateUser = await UsersSchema.findByIdAndUpdate(userdecoded.id, req.body);
-    updateUser.save();
-    return res.json({message: "User profile updated", status: "success"});
   } catch (error) {
-    return res.status(400).json({message: error, status: "error"});
+    res.status(500).json({ message: error.message, status: 'error' });
   }
+
 })
 module.exports = router;
