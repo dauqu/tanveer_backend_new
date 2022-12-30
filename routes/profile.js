@@ -42,11 +42,29 @@ router.get("/", async (req, res) => {
         // token: token,
       });
     } else {
-      req.json({ message: "You are not login ", status: "warning" });
+      res.json({ message: "You are not login ", status: "warning" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message, status: "error" });
   }
 });
 
+router.patch('/', async (req, res) => {
+  try {
+    // get token 
+    const token = req.body.token || req.headers["token"] || req.cookies.token;
+    if(!token){
+      res.json({message: "Unauthorized", status: "warning"})
+    }
+    const userdecoded = JWT.verify(token, process.env.JWT_SECRET);
+    if(!userdecoded){
+      res.json({message: "User not found", status: "warning"})
+    }
+    const updateUser = await UsersSchema.findByIdAndUpdate(userdecoded.id, req.body);
+    updateUser.save();
+    return res.json({message: "User profile updated", status: "success"});
+  } catch (error) {
+    return res.status(400).json({message: error, status: "error"});
+  }
+})
 module.exports = router;
